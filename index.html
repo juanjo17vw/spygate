@@ -721,7 +721,7 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbww3d16dSHiAYsVS1PblZCLbM-vZfCcFUHNz0wKmtvzffxoX7j9PKfyvi1Q5eIx-KuJGw/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_iJLAviu_V6sAqWGwy9_rpDE-VI3fvhCpglFfNV2boEX4rsU6bKFWkXohwlzDZs1qmA/exec';
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -778,27 +778,80 @@ function changeMonth(dir) {
   loadHomeData();
 }
 
-async function loadHomeData() {
-  document.getElementById('total-flota').textContent = '...';
-  document.getElementById('total-flota-sub').textContent = 'Cargando datos...';
-  ['945','270','741','1093'].forEach(c => {
-    document.getElementById('total-' + c).textContent = '...';
-  });
+// CACHE helpers
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+function getCached(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const {ts, data} = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(key); return null; }
+    return data;
+  } catch(e) { return null; }
+}
+
+function setCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ts: Date.now(), data})); } catch(e) {}
+}
+
+function clearCache() {
+  Object.keys(localStorage).filter(k => k.startsWith('spygate_')).forEach(k => localStorage.removeItem(k));
+}
+
+// Load all year data once and cache it
+let _annualCache = null;
+
+async function getAnnualData(forceRefresh) {
+  const cacheKey = 'spygate_annual_' + currentDate.getFullYear();
+  if (!forceRefresh) {
+    const cached = getCached(cacheKey);
+    if (cached) { _annualCache = cached; return cached; }
+    if (_annualCache) return _annualCache;
+  }
+  const res = await fetch(`${SCRIPT_URL}?action=annual`);
+  const json = await res.json();
+  if (json.status === 'OK') {
+    setCache(cacheKey, json.data);
+    _annualCache = json.data;
+    return json.data;
+  }
+  return null;
+}
+
+async function loadHomeData(forceRefresh) {
+  const mes = MONTHS[currentDate.getMonth()];
+  document.getElementById('total-flota-sub').textContent = 'Cargando...';
+
+  // Show cached instantly if available
+  const cacheKey = 'spygate_annual_' + currentDate.getFullYear();
+  const cached = getCached(cacheKey);
+  if (cached && cached[mes]) {
+    const d = cached[mes];
+    document.getElementById('total-945').textContent = fmt(d.total945);
+    document.getElementById('total-270').textContent = fmt(d.total270);
+    document.getElementById('total-741').textContent = fmt(d.total741);
+    document.getElementById('total-1093').textContent = fmt(d.total1093);
+    document.getElementById('total-flota').textContent = fmt(d.totalFlota);
+    document.getElementById('total-flota-sub').textContent = mes + ' · 4 vehículos activos ✓';
+    if (!forceRefresh) return;
+  } else {
+    ['945','270','741','1093'].forEach(c => document.getElementById('total-'+c).textContent = '...');
+    document.getElementById('total-flota').textContent = '...';
+  }
 
   try {
-    const mes = MONTHS[currentDate.getMonth()];
-    const res = await fetch(`${SCRIPT_URL}?action=home&mes=${encodeURIComponent(mes)}`);
-    const data = await res.json();
-    if (data.status === 'OK') {
-      document.getElementById('total-945').textContent = fmt(data.total945);
-      document.getElementById('total-270').textContent = fmt(data.total270);
-      document.getElementById('total-741').textContent = fmt(data.total741);
-      document.getElementById('total-1093').textContent = fmt(data.total1093);
-      document.getElementById('total-flota').textContent = fmt(data.totalFlota);
+    const data = await getAnnualData(forceRefresh);
+    if (data && data[mes]) {
+      const d = data[mes];
+      document.getElementById('total-945').textContent = fmt(d.total945);
+      document.getElementById('total-270').textContent = fmt(d.total270);
+      document.getElementById('total-741').textContent = fmt(d.total741);
+      document.getElementById('total-1093').textContent = fmt(d.total1093);
+      document.getElementById('total-flota').textContent = fmt(d.totalFlota);
       document.getElementById('total-flota-sub').textContent = mes + ' · 4 vehículos activos';
     }
   } catch(e) {
-    document.getElementById('total-flota').textContent = '—';
     document.getElementById('total-flota-sub').textContent = 'Sin conexión';
   }
 }
@@ -1009,33 +1062,26 @@ async function sendDataSimple() {
 async function loadResumenAnual() {
   const year = currentDate.getFullYear();
   document.getElementById('resumen-year').textContent = year;
-  document.getElementById('resumen-total-flota').textContent = '...';
-  document.getElementById('resumen-flota-sub').textContent = 'Sumando 12 meses...';
-  ['945','270','741','1093'].forEach(c => document.getElementById('resumen-'+c).textContent = '...');
   const rows = document.getElementById('resumen-rows');
-  rows.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">Cargando...</div>';
 
   try {
-    const promises = MONTHS.map(mes =>
-      fetch(`${SCRIPT_URL}?action=home&mes=${encodeURIComponent(mes)}`)
-        .then(r => r.json()).catch(() => ({status:'ERROR'}))
-    );
-    const results = await Promise.all(promises);
+    const data = await getAnnualData(false);
+    if (!data) throw new Error();
 
     let html = '';
     let sums = {t945:0, t270:0, t741:0, t1093:0};
 
-    results.forEach((data, i) => {
-      const ok = data.status === 'OK';
-      const t945  = ok ? (parseFloat(data.total945)||0)  : 0;
-      const t270  = ok ? (parseFloat(data.total270)||0)  : 0;
-      const t741  = ok ? (parseFloat(data.total741)||0)  : 0;
-      const t1093 = ok ? (parseFloat(data.total1093)||0) : 0;
+    MONTHS.forEach((mes, i) => {
+      const d = data[mes] || {};
+      const t945  = parseFloat(d.total945)||0;
+      const t270  = parseFloat(d.total270)||0;
+      const t741  = parseFloat(d.total741)||0;
+      const t1093 = parseFloat(d.total1093)||0;
       sums.t945 += t945; sums.t270 += t270;
       sums.t741 += t741; sums.t1093 += t1093;
 
       html += `<div class="anual-row">
-        <div class="anual-td">${MONTHS[i].substring(0,3).toUpperCase()}</div>
+        <div class="anual-td">${mes.substring(0,3).toUpperCase()}</div>
         <div class="anual-td">${t945>0 ? t945.toFixed(0)+'€' : '—'}</div>
         <div class="anual-td">${t270>0 ? t270.toFixed(0)+'€' : '—'}</div>
         <div class="anual-td">${t741>0 ? t741.toFixed(0)+'€' : '—'}</div>
@@ -1053,7 +1099,6 @@ async function loadResumenAnual() {
 
     rows.innerHTML = html;
 
-    // Update top cards
     const totalAnual = sums.t945 + sums.t270 + sums.t741 + sums.t1093;
     document.getElementById('resumen-total-flota').textContent = totalAnual.toFixed(2) + '€';
     document.getElementById('resumen-flota-sub').textContent = year + ' · 4 vehículos · 12 meses';
@@ -1068,6 +1113,20 @@ async function loadResumenAnual() {
     document.getElementById('resumen-flota-sub').textContent = 'Error de conexión';
   }
 }
+
+// Pull to refresh — clears cache and reloads
+let ptStartY = 0;
+document.addEventListener('touchstart', e => { ptStartY = e.touches[0].clientY; });
+document.addEventListener('touchend', e => {
+  const diff = e.changedTouches[0].clientY - ptStartY;
+  const screen = document.querySelector('.screen.active');
+  if (diff > 80 && screen && screen.scrollTop <= 0) {
+    clearCache();
+    _annualCache = null;
+    loadHomeData(true);
+    showToast('🔄 Actualizando datos...');
+  }
+});
 
 // Override showScreen to load resumen when needed
 const _showScreen = showScreen;
