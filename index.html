@@ -537,18 +537,18 @@ body {
     </div>
     <div class="row-fields">
       <div class="field-group">
-        <div class="field-label">GASOLINA</div>
-        <input class="field-input" type="number" id="ivan-gasolina" placeholder="0.00" inputmode="decimal" step="0.01">
+        <div class="field-label">PORCENTAJE %</div>
+        <input class="field-input" type="number" id="ivan-porcentaje" placeholder="0.00" inputmode="decimal" step="0.01">
       </div>
       <div class="field-group">
-        <div class="field-label">PARCIAL PTE</div>
-        <input class="field-input" type="number" id="ivan-parcialpte" placeholder="0.00" inputmode="decimal" step="0.01">
+        <div class="field-label">€/KM</div>
+        <input class="field-input" type="number" id="ivan-eurokm" placeholder="0.00" inputmode="decimal" step="0.01">
       </div>
     </div>
     <div class="row-fields">
       <div class="field-group">
-        <div class="field-label">EMISORA</div>
-        <input class="field-input" type="number" id="ivan-emisora" placeholder="0.00" inputmode="decimal" step="0.01">
+        <div class="field-label">GASOLINA</div>
+        <input class="field-input" type="number" id="ivan-gasolina" placeholder="0.00" inputmode="decimal" step="0.01">
       </div>
       <div class="field-group">
         <div class="field-label">SP</div>
@@ -579,18 +579,18 @@ body {
     </div>
     <div class="row-fields">
       <div class="field-group">
-        <div class="field-label">GASOLINA</div>
-        <input class="field-input" type="number" id="juanjo-gasolina" placeholder="0.00" inputmode="decimal" step="0.01">
+        <div class="field-label">PORCENTAJE %</div>
+        <input class="field-input" type="number" id="juanjo-porcentaje" placeholder="0.00" inputmode="decimal" step="0.01">
       </div>
       <div class="field-group">
-        <div class="field-label">PARCIAL PTE</div>
-        <input class="field-input" type="number" id="juanjo-parcialpte" placeholder="0.00" inputmode="decimal" step="0.01">
+        <div class="field-label">€/KM</div>
+        <input class="field-input" type="number" id="juanjo-eurokm" placeholder="0.00" inputmode="decimal" step="0.01">
       </div>
     </div>
     <div class="row-fields">
       <div class="field-group">
-        <div class="field-label">EMISORA</div>
-        <input class="field-input" type="number" id="juanjo-emisora" placeholder="0.00" inputmode="decimal" step="0.01">
+        <div class="field-label">GASOLINA</div>
+        <input class="field-input" type="number" id="juanjo-gasolina" placeholder="0.00" inputmode="decimal" step="0.01">
       </div>
       <div class="field-group">
         <div class="field-label">SP</div>
@@ -626,11 +626,31 @@ body {
       <div class="field-label">PARCIAL</div>
       <input class="field-input" type="number" id="c1-parcial" placeholder="0.00" inputmode="decimal" step="0.01">
     </div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">PORCENTAJE %</div>
+        <input class="field-input" type="number" id="c1-porcentaje" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">€/KM</div>
+        <input class="field-input" type="number" id="c1-eurokm" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
 
     <div class="form-section-title" id="formsimple-c2-label">CONDUCTOR 2</div>
     <div class="field-group">
       <div class="field-label">PARCIAL</div>
       <input class="field-input" type="number" id="c2-parcial" placeholder="0.00" inputmode="decimal" step="0.01">
+    </div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">PORCENTAJE %</div>
+        <input class="field-input" type="number" id="c2-porcentaje" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">€/KM</div>
+        <input class="field-input" type="number" id="c2-eurokm" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
     </div>
   </div>
   <button class="send-btn" id="send-simple-btn" onclick="sendDataSimple()">💾 Guardar en Sheet</button>
@@ -664,7 +684,7 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx70RbqSY0k4cA6vl6sGNsOnEPQmUHdoXUvP54ClLaEyhm7KHOa8XcRfduv3K0VRoRmFQ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbww3d16dSHiAYsVS1PblZCLbM-vZfCcFUHNz0wKmtvzffxoX7j9PKfyvi1Q5eIx-KuJGw/exec';
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -786,9 +806,9 @@ async function loadCocheDetail(num) {
           <div class="data-grid">
             <div class="data-cell"><div class="data-cell-label">TPV</div><div class="data-cell-value">${fmt(c.tpv)}</div></div>
             <div class="data-cell"><div class="data-cell-label">PARCIAL</div><div class="data-cell-value">${fmt(c.parcial)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">PORCENTAJE</div><div class="data-cell-value">${c.porcentaje||'—'}%</div></div>
+            <div class="data-cell"><div class="data-cell-label">€/KM</div><div class="data-cell-value">${fmt(c.eurokm)}</div></div>
             <div class="data-cell"><div class="data-cell-label">GASOLINA</div><div class="data-cell-value">${fmt(c.gasolina)}</div></div>
-            <div class="data-cell"><div class="data-cell-label">PARCIAL PTE</div><div class="data-cell-value">${fmt(c.parcialpte)}</div></div>
-            <div class="data-cell"><div class="data-cell-label">EMISORA</div><div class="data-cell-value">${fmt(c.emisora)}</div></div>
             <div class="data-cell"><div class="data-cell-label">SP</div><div class="data-cell-value">${fmt(c.sp)}</div></div>
             <div class="data-cell"><div class="data-cell-label">VALES</div><div class="data-cell-value">${fmt(c.vales)}</div></div>
             <div class="data-cell"><div class="data-cell-label">AGENCIA</div><div class="data-cell-value">${fmt(c.agencia)}</div></div>
@@ -804,7 +824,9 @@ async function loadCocheDetail(num) {
             <div class="conductor-total">${fmt(c.parcial)}</div>
           </div>
           <div class="data-grid">
-            <div class="data-cell" style="grid-column:span 2"><div class="data-cell-label">PARCIAL</div><div class="data-cell-value">${fmt(c.parcial)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">PARCIAL</div><div class="data-cell-value">${fmt(c.parcial)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">PORCENTAJE</div><div class="data-cell-value">${c.porcentaje||'—'}%</div></div>
+            <div class="data-cell" style="grid-column:span 2"><div class="data-cell-label">€/KM</div><div class="data-cell-value">${fmt(c.eurokm)}</div></div>
           </div>
         </div>`;
       });
@@ -847,7 +869,7 @@ async function loadForm945() {
     if (data.status === 'OK' && data.conductores) {
       const ivan = data.conductores[0];
       const juanjo = data.conductores[1];
-      const fields = ['tpv','parcial','gasolina','parcialpte','emisora','sp','vales','agencia'];
+      const fields = ['tpv','parcial','porcentaje','eurokm','gasolina','sp','vales','agencia'];
       fields.forEach(f => {
         if (ivan[f]) document.getElementById('ivan-' + f).value = ivan[f];
         if (juanjo[f]) document.getElementById('juanjo-' + f).value = juanjo[f];
@@ -862,8 +884,12 @@ async function loadFormSimple() {
     const res = await fetch(`${SCRIPT_URL}?action=coche&mes=${encodeURIComponent(mes)}&coche=${currentCoche}`);
     const data = await res.json();
     if (data.status === 'OK' && data.conductores) {
-      document.getElementById('c1-parcial').value = data.conductores[0].parcial || '';
-      document.getElementById('c2-parcial').value = data.conductores[1].parcial || '';
+      document.getElementById('c1-parcial').value    = data.conductores[0].parcial || '';
+      document.getElementById('c1-porcentaje').value = data.conductores[0].porcentaje || '';
+      document.getElementById('c1-eurokm').value     = data.conductores[0].eurokm || '';
+      document.getElementById('c2-parcial').value    = data.conductores[1].parcial || '';
+      document.getElementById('c2-porcentaje').value = data.conductores[1].porcentaje || '';
+      document.getElementById('c2-eurokm').value     = data.conductores[1].eurokm || '';
     }
   } catch(e) {}
 }
@@ -877,24 +903,24 @@ async function sendData945() {
   const payload = {
     action: 'save945', mes,
     ivan: {
-      tpv: parseFloat(document.getElementById('ivan-tpv').value) || 0,
-      parcial: parseFloat(document.getElementById('ivan-parcial').value) || 0,
-      gasolina: parseFloat(document.getElementById('ivan-gasolina').value) || 0,
-      parcialpte: parseFloat(document.getElementById('ivan-parcialpte').value) || 0,
-      emisora: parseFloat(document.getElementById('ivan-emisora').value) || 0,
-      sp: parseFloat(document.getElementById('ivan-sp').value) || 0,
-      vales: parseFloat(document.getElementById('ivan-vales').value) || 0,
-      agencia: parseFloat(document.getElementById('ivan-agencia').value) || 0,
+      tpv:        parseFloat(document.getElementById('ivan-tpv').value) || 0,
+      parcial:    parseFloat(document.getElementById('ivan-parcial').value) || 0,
+      porcentaje: parseFloat(document.getElementById('ivan-porcentaje').value) || 0,
+      eurokm:     parseFloat(document.getElementById('ivan-eurokm').value) || 0,
+      gasolina:   parseFloat(document.getElementById('ivan-gasolina').value) || 0,
+      sp:         parseFloat(document.getElementById('ivan-sp').value) || 0,
+      vales:      parseFloat(document.getElementById('ivan-vales').value) || 0,
+      agencia:    parseFloat(document.getElementById('ivan-agencia').value) || 0,
     },
     juanjo: {
-      tpv: parseFloat(document.getElementById('juanjo-tpv').value) || 0,
-      parcial: parseFloat(document.getElementById('juanjo-parcial').value) || 0,
-      gasolina: parseFloat(document.getElementById('juanjo-gasolina').value) || 0,
-      parcialpte: parseFloat(document.getElementById('juanjo-parcialpte').value) || 0,
-      emisora: parseFloat(document.getElementById('juanjo-emisora').value) || 0,
-      sp: parseFloat(document.getElementById('juanjo-sp').value) || 0,
-      vales: parseFloat(document.getElementById('juanjo-vales').value) || 0,
-      agencia: parseFloat(document.getElementById('juanjo-agencia').value) || 0,
+      tpv:        parseFloat(document.getElementById('juanjo-tpv').value) || 0,
+      parcial:    parseFloat(document.getElementById('juanjo-parcial').value) || 0,
+      porcentaje: parseFloat(document.getElementById('juanjo-porcentaje').value) || 0,
+      eurokm:     parseFloat(document.getElementById('juanjo-eurokm').value) || 0,
+      gasolina:   parseFloat(document.getElementById('juanjo-gasolina').value) || 0,
+      sp:         parseFloat(document.getElementById('juanjo-sp').value) || 0,
+      vales:      parseFloat(document.getElementById('juanjo-vales').value) || 0,
+      agencia:    parseFloat(document.getElementById('juanjo-agencia').value) || 0,
     }
   };
 
@@ -921,8 +947,12 @@ async function sendDataSimple() {
   const payload = {
     action: 'savesimple', mes,
     coche: currentCoche,
-    c1parcial: parseFloat(document.getElementById('c1-parcial').value) || 0,
-    c2parcial: parseFloat(document.getElementById('c2-parcial').value) || 0,
+    c1parcial:    parseFloat(document.getElementById('c1-parcial').value) || 0,
+    c1porcentaje: parseFloat(document.getElementById('c1-porcentaje').value) || 0,
+    c1eurokm:     parseFloat(document.getElementById('c1-eurokm').value) || 0,
+    c2parcial:    parseFloat(document.getElementById('c2-parcial').value) || 0,
+    c2porcentaje: parseFloat(document.getElementById('c2-porcentaje').value) || 0,
+    c2eurokm:     parseFloat(document.getElementById('c2-eurokm').value) || 0,
   };
 
   try {
