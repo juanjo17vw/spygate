@@ -658,14 +658,48 @@ body {
 
 <!-- ═══════════════════════════════════ RESUMEN ANUAL ══ -->
 <div class="screen" id="screen-resumen">
-  <div class="header">
-    <button class="back-btn" onclick="showScreen('home')">←</button>
-    <div>
-      <div class="header-title">Resumen Anual</div>
-      <div class="header-sub" id="resumen-year">2026</div>
+  <div class="home-header">
+    <div class="home-brand">
+      <button class="back-btn" onclick="showScreen('home')" style="margin-right:4px">←</button>
+      <div>
+        <div class="home-brand-text">RESUMEN <span id="resumen-year" style="color:var(--accent)">2026</span></div>
+        <div class="home-brand-sub">TOTAL ANUAL · TODOS LOS MESES</div>
+      </div>
     </div>
   </div>
-  <div class="anual-scroll">
+
+  <div class="flota-total" style="background:linear-gradient(135deg,#1a0a40 0%,#2d1b6e 100%);border:1px solid #4a2fa0">
+    <div class="flota-label">TOTAL FLOTA ANUAL</div>
+    <div class="flota-amount" id="resumen-total-flota">—</div>
+    <div class="flota-sub" id="resumen-flota-sub">Sumando 12 meses...</div>
+  </div>
+
+  <div class="coches-grid">
+    <div class="coche-card c945">
+      <div class="coche-num">🚕 945</div>
+      <div class="coche-total" id="resumen-945">—</div>
+      <div class="coche-conductores">Ivan · Juanjo</div>
+    </div>
+    <div class="coche-card c270">
+      <div class="coche-num">🚕 270</div>
+      <div class="coche-total" id="resumen-270">—</div>
+      <div class="coche-conductores">Victor Carlos · Isaac</div>
+    </div>
+    <div class="coche-card c741">
+      <div class="coche-num">🚕 741</div>
+      <div class="coche-total" id="resumen-741">—</div>
+      <div class="coche-conductores">Amatula · Adri Fina</div>
+    </div>
+    <div class="coche-card c1093">
+      <div class="coche-num">🚕 1093</div>
+      <div class="coche-total" id="resumen-1093">—</div>
+      <div class="coche-conductores">Christian · Adri</div>
+    </div>
+  </div>
+
+  <!-- TABLA DETALLE POR MES -->
+  <div style="padding:0 20px 30px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text-dim);margin-bottom:10px">DETALLE POR MES</div>
     <div class="anual-table">
       <div class="anual-table-header">
         <div class="anual-th">MES</div>
@@ -972,6 +1006,9 @@ async function sendDataSimple() {
 async function loadResumenAnual() {
   const year = currentDate.getFullYear();
   document.getElementById('resumen-year').textContent = year;
+  document.getElementById('resumen-total-flota').textContent = '...';
+  document.getElementById('resumen-flota-sub').textContent = 'Sumando 12 meses...';
+  ['945','270','741','1093'].forEach(c => document.getElementById('resumen-'+c).textContent = '...');
   const rows = document.getElementById('resumen-rows');
   rows.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">Cargando...</div>';
 
@@ -987,9 +1024,9 @@ async function loadResumenAnual() {
 
     results.forEach((data, i) => {
       const ok = data.status === 'OK';
-      const t945 = ok ? (parseFloat(data.total945)||0) : 0;
-      const t270 = ok ? (parseFloat(data.total270)||0) : 0;
-      const t741 = ok ? (parseFloat(data.total741)||0) : 0;
+      const t945  = ok ? (parseFloat(data.total945)||0)  : 0;
+      const t270  = ok ? (parseFloat(data.total270)||0)  : 0;
+      const t741  = ok ? (parseFloat(data.total741)||0)  : 0;
       const t1093 = ok ? (parseFloat(data.total1093)||0) : 0;
       sums.t945 += t945; sums.t270 += t270;
       sums.t741 += t741; sums.t1093 += t1093;
@@ -1012,8 +1049,20 @@ async function loadResumenAnual() {
     </div>`;
 
     rows.innerHTML = html;
+
+    // Update top cards
+    const totalAnual = sums.t945 + sums.t270 + sums.t741 + sums.t1093;
+    document.getElementById('resumen-total-flota').textContent = totalAnual.toFixed(2) + '€';
+    document.getElementById('resumen-flota-sub').textContent = year + ' · 4 vehículos · 12 meses';
+    document.getElementById('resumen-945').textContent  = sums.t945.toFixed(2)  + '€';
+    document.getElementById('resumen-270').textContent  = sums.t270.toFixed(2)  + '€';
+    document.getElementById('resumen-741').textContent  = sums.t741.toFixed(2)  + '€';
+    document.getElementById('resumen-1093').textContent = sums.t1093.toFixed(2) + '€';
+
   } catch(e) {
     rows.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">Error al cargar</div>';
+    document.getElementById('resumen-total-flota').textContent = '—';
+    document.getElementById('resumen-flota-sub').textContent = 'Error de conexión';
   }
 }
 
