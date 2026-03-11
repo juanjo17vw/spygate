@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SPYGATE">
+<title>SPYGATE — Gestión de Flota</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1c1c27;
+  --border: #2a2a3a;
+  --text: #f0f0f5;
+  --text-dim: #7070a0;
+  --accent: #6c63ff;
+  --accent-glow: rgba(108,99,255,0.3);
+  --gold: #f5c842;
+  --gold-bg: rgba(245,200,66,0.08);
+  --green: #2ecc71;
+  --green-bg: rgba(46,204,113,0.08);
+  --red: #e74c3c;
+  --red-bg: rgba(231,76,60,0.08);
+  --blue: #3498db;
+  --blue-bg: rgba(52,152,219,0.08);
+  --orange: #e67e22;
+  --orange-bg: rgba(230,126,34,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* SCREENS */
+.screen { display:none; min-height:100vh; flex-direction:column; }
+.screen.active { display:flex; }
+
+/* HEADER */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.back-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.header-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+.header-sub { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+
+/* HOME HEADER */
+.home-header {
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a1040 100%);
+  padding: 24px 20px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.home-header::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+.home-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.home-logo {
+  width: 44px; height: 44px;
+  background: var(--accent);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.home-brand-text { font-size: 22px; font-weight: 800; letter-spacing: 2px; }
+.home-brand-sub { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
+
+/* MONTH SELECTOR */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+.month-arrow {
+  background: none; border: none;
+  color: var(--text); font-size: 20px;
+  cursor: pointer; padding: 4px 8px;
+}
+.month-name {
+  font-size: 17px; font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* TOTAL FLOTA */
+.flota-total {
+  margin: 16px 20px 0;
+  background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+  border-radius: 18px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.flota-total::after {
+  content: 'FLOTA';
+  position: absolute;
+  right: -10px; top: -10px;
+  font-size: 60px; font-weight: 800;
+  opacity: 0.07; letter-spacing: -2px;
+}
+.flota-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; opacity: 0.8; }
+.flota-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 38px; font-weight: 600;
+  margin-top: 4px;
+}
+.flota-sub { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+
+/* COCHES GRID */
+.coches-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 20px;
+}
+.coche-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.coche-card:active { transform: scale(0.97); }
+.coche-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.coche-card.c945::before { background: var(--gold); }
+.coche-card.c270::before { background: var(--blue); }
+.coche-card.c741::before { background: var(--green); }
+.coche-card.c1093::before { background: var(--orange); }
+
+.coche-num {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+.coche-card.c945 .coche-num { color: var(--gold); }
+.coche-card.c270 .coche-num { color: var(--blue); }
+.coche-card.c741 .coche-num { color: var(--green); }
+.coche-card.c1093 .coche-num { color: var(--orange); }
+
+.coche-total {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px; font-weight: 600;
+  color: var(--text);
+}
+.coche-conductores {
+  font-size: 10px; color: var(--text-dim);
+  margin-top: 6px; line-height: 1.4;
+}
+
+/* BOTONES ACCION */
+.action-row {
+  display: flex; gap: 10px;
+  padding: 0 20px 20px;
+}
+.action-btn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px;
+}
+
+/* DETALLE COCHE */
+.coche-header-bar {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.coche-badge {
+  display: inline-block;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+.coche-badge.c945 { background: var(--gold-bg); color: var(--gold); }
+.coche-badge.c270 { background: var(--blue-bg); color: var(--blue); }
+.coche-badge.c741 { background: var(--green-bg); color: var(--green); }
+.coche-badge.c1093 { background: var(--orange-bg); color: var(--orange); }
+
+.conductor-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin: 0 20px 12px;
+  overflow: hidden;
+}
+.conductor-header {
+  padding: 14px 16px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.conductor-name {
+  font-size: 14px; font-weight: 700;
+}
+.conductor-total {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px; font-weight: 600;
+  color: var(--green);
+}
+.data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+}
+.data-cell {
+  background: var(--surface);
+  padding: 10px 14px;
+}
+.data-cell-label {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+.data-cell-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 600;
+  color: var(--text);
+}
+
+.total-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin: 0 20px 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.total-block-label {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; color: var(--text-dim);
+}
+.total-block-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px; font-weight: 600;
+}
+
+.edit-fab {
+  position: fixed;
+  bottom: 30px; right: 20px;
+  background: var(--accent);
+  border: none;
+  border-radius: 16px;
+  padding: 14px 20px;
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+/* FORMULARIO */
+.form-scroll { flex: 1; overflow-y: auto; padding: 16px 20px 100px; }
+
+.form-section-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; color: var(--text-dim);
+  margin: 20px 0 10px;
+}
+.form-section-title:first-child { margin-top: 0; }
+
+.field-group { margin-bottom: 12px; }
+.field-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.field-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field-input:focus { border-color: var(--accent); }
+
+.row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.send-btn {
+  position: fixed;
+  bottom: 20px; left: 20px; right: 20px;
+  background: var(--accent);
+  border: none;
+  border-radius: 16px;
+  padding: 16px;
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+/* RESUMEN ANUAL */
+.anual-scroll { flex: 1; overflow-y: auto; padding: 16px 20px 30px; }
+.anual-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.anual-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  background: var(--surface2);
+  padding: 10px 14px;
+  gap: 4px;
+}
+.anual-th {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1px; color: var(--text-dim);
+  text-align: right;
+}
+.anual-th:first-child { text-align: left; }
+.anual-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  padding: 11px 14px;
+  gap: 4px;
+  border-top: 1px solid var(--border);
+}
+.anual-td {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text);
+  text-align: right;
+}
+.anual-td:first-child {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700;
+  text-align: left; color: var(--text);
+}
+.anual-row.total-row {
+  background: var(--surface2);
+}
+.anual-row.total-row .anual-td {
+  font-weight: 700; color: var(--gold);
+}
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13px; font-weight: 600;
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s;
+  white-space: nowrap;
+  z-index: 999;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* SPINNER */
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ HOME ══ -->
+<div class="screen active" id="screen-home">
+  <div class="home-header">
+    <div class="home-brand">
+      <div class="home-logo">🚕</div>
+      <div>
+        <div class="home-brand-text">SPYGATE</div>
+        <div class="home-brand-sub">GESTIÓN DE FLOTA</div>
+      </div>
+    </div>
+    <div class="month-nav">
+      <button class="month-arrow" onclick="changeMonth(-1)">‹</button>
+      <div class="month-name" id="month-title">—</div>
+      <button class="month-arrow" onclick="changeMonth(1)">›</button>
+    </div>
+  </div>
+
+  <div class="flota-total">
+    <div class="flota-label">TOTAL FLOTA</div>
+    <div class="flota-amount" id="total-flota">—</div>
+    <div class="flota-sub" id="total-flota-sub">Cargando datos...</div>
+  </div>
+
+  <div class="coches-grid">
+    <div class="coche-card c945" onclick="openCoche('945')">
+      <div class="coche-num">🚕 945</div>
+      <div class="coche-total" id="total-945">—</div>
+      <div class="coche-conductores">Ivan · Juanjo</div>
+    </div>
+    <div class="coche-card c270" onclick="openCoche('270')">
+      <div class="coche-num">🚕 270</div>
+      <div class="coche-total" id="total-270">—</div>
+      <div class="coche-conductores">Victor Carlos · Isaac</div>
+    </div>
+    <div class="coche-card c741" onclick="openCoche('741')">
+      <div class="coche-num">🚕 741</div>
+      <div class="coche-total" id="total-741">—</div>
+      <div class="coche-conductores">Amatula · Adri Fina</div>
+    </div>
+    <div class="coche-card c1093" onclick="openCoche('1093')">
+      <div class="coche-num">🚕 1093</div>
+      <div class="coche-total" id="total-1093">—</div>
+      <div class="coche-conductores">Christian · Adri</div>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="action-btn" onclick="showScreen('resumen')">📊 Resumen Anual</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ DETALLE COCHE ══ -->
+<div class="screen" id="screen-coche">
+  <div class="header">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <div>
+      <div class="header-title" id="coche-title">Coche</div>
+      <div class="header-sub" id="coche-subtitle">—</div>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding-bottom:100px">
+    <div id="coche-detail-content">
+      <div style="text-align:center;padding:60px 20px;color:var(--text-dim)">Cargando...</div>
+    </div>
+  </div>
+
+  <button class="edit-fab" onclick="openFormulario()">✏️ Introducir datos</button>
+</div>
+
+<!-- ═══════════════════════════════════ FORMULARIO 945 ══ -->
+<div class="screen" id="screen-form945">
+  <div class="header">
+    <button class="back-btn" onclick="showScreen('coche')">←</button>
+    <div>
+      <div class="header-title">Datos 945</div>
+      <div class="header-sub" id="form945-mes">—</div>
+    </div>
+  </div>
+  <div class="form-scroll">
+    <div class="form-section-title">🚗 IVAN</div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">TPV</div>
+        <input class="field-input" type="number" id="ivan-tpv" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">PARCIAL</div>
+        <input class="field-input" type="number" id="ivan-parcial" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">GASOLINA</div>
+        <input class="field-input" type="number" id="ivan-gasolina" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">PARCIAL PTE</div>
+        <input class="field-input" type="number" id="ivan-parcialpte" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">EMISORA</div>
+        <input class="field-input" type="number" id="ivan-emisora" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">SP</div>
+        <input class="field-input" type="number" id="ivan-sp" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">VALES</div>
+        <input class="field-input" type="number" id="ivan-vales" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">AGENCIA</div>
+        <input class="field-input" type="number" id="ivan-agencia" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+
+    <div class="form-section-title">🚗 JUANJO</div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">TPV</div>
+        <input class="field-input" type="number" id="juanjo-tpv" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">PARCIAL</div>
+        <input class="field-input" type="number" id="juanjo-parcial" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">GASOLINA</div>
+        <input class="field-input" type="number" id="juanjo-gasolina" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">PARCIAL PTE</div>
+        <input class="field-input" type="number" id="juanjo-parcialpte" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">EMISORA</div>
+        <input class="field-input" type="number" id="juanjo-emisora" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">SP</div>
+        <input class="field-input" type="number" id="juanjo-sp" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+    <div class="row-fields">
+      <div class="field-group">
+        <div class="field-label">VALES</div>
+        <input class="field-input" type="number" id="juanjo-vales" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field-group">
+        <div class="field-label">AGENCIA</div>
+        <input class="field-input" type="number" id="juanjo-agencia" placeholder="0.00" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+  </div>
+  <button class="send-btn" id="send-945-btn" onclick="sendData945()">💾 Guardar en Sheet</button>
+</div>
+
+<!-- ═══════════════════════════════════ FORMULARIO SIMPLE (270/741/1093) ══ -->
+<div class="screen" id="screen-formsimple">
+  <div class="header">
+    <button class="back-btn" onclick="showScreen('coche')">←</button>
+    <div>
+      <div class="header-title" id="formsimple-title">Datos</div>
+      <div class="header-sub" id="formsimple-mes">—</div>
+    </div>
+  </div>
+  <div class="form-scroll">
+    <div class="form-section-title" id="formsimple-c1-label">CONDUCTOR 1</div>
+    <div class="field-group">
+      <div class="field-label">PARCIAL</div>
+      <input class="field-input" type="number" id="c1-parcial" placeholder="0.00" inputmode="decimal" step="0.01">
+    </div>
+
+    <div class="form-section-title" id="formsimple-c2-label">CONDUCTOR 2</div>
+    <div class="field-group">
+      <div class="field-label">PARCIAL</div>
+      <input class="field-input" type="number" id="c2-parcial" placeholder="0.00" inputmode="decimal" step="0.01">
+    </div>
+  </div>
+  <button class="send-btn" id="send-simple-btn" onclick="sendDataSimple()">💾 Guardar en Sheet</button>
+</div>
+
+<!-- ═══════════════════════════════════ RESUMEN ANUAL ══ -->
+<div class="screen" id="screen-resumen">
+  <div class="header">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <div>
+      <div class="header-title">Resumen Anual</div>
+      <div class="header-sub" id="resumen-year">2026</div>
+    </div>
+  </div>
+  <div class="anual-scroll">
+    <div class="anual-table">
+      <div class="anual-table-header">
+        <div class="anual-th">MES</div>
+        <div class="anual-th">945</div>
+        <div class="anual-th">270</div>
+        <div class="anual-th">741</div>
+        <div class="anual-th">1093</div>
+      </div>
+      <div id="resumen-rows">
+        <div style="text-align:center;padding:40px;color:var(--text-dim)">Cargando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx70RbqSY0k4cA6vl6sGNsOnEPQmUHdoXUvP54ClLaEyhm7KHOa8XcRfduv3K0VRoRmFQ/exec';
+
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// CONFIG COCHES
+const COCHES = {
+  '945': {
+    conductores: ['Ivan','Juanjo'],
+    filas: [6, 7], totalFila: 8,
+    color: '#f5c842', class: 'c945',
+    tipo: '945'
+  },
+  '270': {
+    conductores: ['Victor Carlos','Isaac'],
+    filas: [12, 13], totalFila: 14,
+    color: '#3498db', class: 'c270',
+    tipo: 'simple'
+  },
+  '741': {
+    conductores: ['Amatula','Adri Fina'],
+    filas: [18, 19], totalFila: 20,
+    color: '#2ecc71', class: 'c741',
+    tipo: 'simple'
+  },
+  '1093': {
+    conductores: ['Christian','Adri'],
+    filas: [24, 25], totalFila: 26,
+    color: '#e67e22', class: 'c1093',
+    tipo: 'simple'
+  }
+};
+
+let currentDate = new Date();
+currentDate.setDate(1);
+let currentCoche = null;
+
+// INIT
+updateMonthTitle();
+loadHomeData();
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function updateMonthTitle() {
+  document.getElementById('month-title').textContent =
+    MONTHS[currentDate.getMonth()].toUpperCase() + ' ' + currentDate.getFullYear();
+}
+
+function changeMonth(dir) {
+  currentDate.setMonth(currentDate.getMonth() + dir);
+  updateMonthTitle();
+  loadHomeData();
+}
+
+async function loadHomeData() {
+  document.getElementById('total-flota').textContent = '...';
+  document.getElementById('total-flota-sub').textContent = 'Cargando datos...';
+  ['945','270','741','1093'].forEach(c => {
+    document.getElementById('total-' + c).textContent = '...';
+  });
+
+  try {
+    const mes = MONTHS[currentDate.getMonth()];
+    const res = await fetch(`${SCRIPT_URL}?action=home&mes=${encodeURIComponent(mes)}`);
+    const data = await res.json();
+    if (data.status === 'OK') {
+      document.getElementById('total-945').textContent = fmt(data.total945);
+      document.getElementById('total-270').textContent = fmt(data.total270);
+      document.getElementById('total-741').textContent = fmt(data.total741);
+      document.getElementById('total-1093').textContent = fmt(data.total1093);
+      document.getElementById('total-flota').textContent = fmt(data.totalFlota);
+      document.getElementById('total-flota-sub').textContent = mes + ' · 4 vehículos activos';
+    }
+  } catch(e) {
+    document.getElementById('total-flota').textContent = '—';
+    document.getElementById('total-flota-sub').textContent = 'Sin conexión';
+  }
+}
+
+function fmt(val) {
+  const n = parseFloat(val) || 0;
+  return n.toFixed(2) + '€';
+}
+
+function openCoche(num) {
+  currentCoche = num;
+  const cfg = COCHES[num];
+  document.getElementById('coche-title').textContent = 'Taxi ' + num;
+  document.getElementById('coche-subtitle').textContent =
+    MONTHS[currentDate.getMonth()] + ' · ' + cfg.conductores.join(' · ');
+  showScreen('coche');
+  loadCocheDetail(num);
+}
+
+async function loadCocheDetail(num) {
+  const content = document.getElementById('coche-detail-content');
+  content.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-dim)">Cargando...</div>';
+
+  try {
+    const mes = MONTHS[currentDate.getMonth()];
+    const res = await fetch(`${SCRIPT_URL}?action=coche&mes=${encodeURIComponent(mes)}&coche=${num}`);
+    const data = await res.json();
+    const cfg = COCHES[num];
+
+    if (data.status !== 'OK') throw new Error();
+
+    let html = '';
+
+    if (num === '945') {
+      data.conductores.forEach((c, i) => {
+        html += `
+        <div class="conductor-block" style="margin-top:${i===0?'16px':'0'}">
+          <div class="conductor-header">
+            <div class="conductor-name">${cfg.conductores[i]}</div>
+            <div class="conductor-total">${fmt(c.total)}</div>
+          </div>
+          <div class="data-grid">
+            <div class="data-cell"><div class="data-cell-label">TPV</div><div class="data-cell-value">${fmt(c.tpv)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">PARCIAL</div><div class="data-cell-value">${fmt(c.parcial)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">GASOLINA</div><div class="data-cell-value">${fmt(c.gasolina)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">PARCIAL PTE</div><div class="data-cell-value">${fmt(c.parcialpte)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">EMISORA</div><div class="data-cell-value">${fmt(c.emisora)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">SP</div><div class="data-cell-value">${fmt(c.sp)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">VALES</div><div class="data-cell-value">${fmt(c.vales)}</div></div>
+            <div class="data-cell"><div class="data-cell-label">AGENCIA</div><div class="data-cell-value">${fmt(c.agencia)}</div></div>
+          </div>
+        </div>`;
+      });
+    } else {
+      data.conductores.forEach((c, i) => {
+        html += `
+        <div class="conductor-block" style="margin-top:${i===0?'16px':'0'}">
+          <div class="conductor-header">
+            <div class="conductor-name">${cfg.conductores[i]}</div>
+            <div class="conductor-total">${fmt(c.parcial)}</div>
+          </div>
+          <div class="data-grid">
+            <div class="data-cell" style="grid-column:span 2"><div class="data-cell-label">PARCIAL</div><div class="data-cell-value">${fmt(c.parcial)}</div></div>
+          </div>
+        </div>`;
+      });
+    }
+
+    html += `
+    <div class="total-block" style="margin-top:12px">
+      <div class="total-block-label">TOTAL ${num}</div>
+      <div class="total-block-value" style="color:${cfg.color}">${fmt(data.total)}</div>
+    </div>`;
+
+    content.innerHTML = html;
+  } catch(e) {
+    content.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-dim)">Error al cargar datos</div>';
+  }
+}
+
+function openFormulario() {
+  const mes = MONTHS[currentDate.getMonth()];
+  if (currentCoche === '945') {
+    document.getElementById('form945-mes').textContent = mes;
+    showScreen('form945');
+    loadForm945();
+  } else {
+    const cfg = COCHES[currentCoche];
+    document.getElementById('formsimple-title').textContent = 'Datos ' + currentCoche;
+    document.getElementById('formsimple-mes').textContent = mes;
+    document.getElementById('formsimple-c1-label').textContent = '🚗 ' + cfg.conductores[0].toUpperCase();
+    document.getElementById('formsimple-c2-label').textContent = '🚗 ' + cfg.conductores[1].toUpperCase();
+    showScreen('formsimple');
+    loadFormSimple();
+  }
+}
+
+async function loadForm945() {
+  try {
+    const mes = MONTHS[currentDate.getMonth()];
+    const res = await fetch(`${SCRIPT_URL}?action=coche&mes=${encodeURIComponent(mes)}&coche=945`);
+    const data = await res.json();
+    if (data.status === 'OK' && data.conductores) {
+      const ivan = data.conductores[0];
+      const juanjo = data.conductores[1];
+      const fields = ['tpv','parcial','gasolina','parcialpte','emisora','sp','vales','agencia'];
+      fields.forEach(f => {
+        if (ivan[f]) document.getElementById('ivan-' + f).value = ivan[f];
+        if (juanjo[f]) document.getElementById('juanjo-' + f).value = juanjo[f];
+      });
+    }
+  } catch(e) {}
+}
+
+async function loadFormSimple() {
+  try {
+    const mes = MONTHS[currentDate.getMonth()];
+    const res = await fetch(`${SCRIPT_URL}?action=coche&mes=${encodeURIComponent(mes)}&coche=${currentCoche}`);
+    const data = await res.json();
+    if (data.status === 'OK' && data.conductores) {
+      document.getElementById('c1-parcial').value = data.conductores[0].parcial || '';
+      document.getElementById('c2-parcial').value = data.conductores[1].parcial || '';
+    }
+  } catch(e) {}
+}
+
+async function sendData945() {
+  const btn = document.getElementById('send-945-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  const mes = MONTHS[currentDate.getMonth()];
+  const payload = {
+    action: 'save945', mes,
+    ivan: {
+      tpv: parseFloat(document.getElementById('ivan-tpv').value) || 0,
+      parcial: parseFloat(document.getElementById('ivan-parcial').value) || 0,
+      gasolina: parseFloat(document.getElementById('ivan-gasolina').value) || 0,
+      parcialpte: parseFloat(document.getElementById('ivan-parcialpte').value) || 0,
+      emisora: parseFloat(document.getElementById('ivan-emisora').value) || 0,
+      sp: parseFloat(document.getElementById('ivan-sp').value) || 0,
+      vales: parseFloat(document.getElementById('ivan-vales').value) || 0,
+      agencia: parseFloat(document.getElementById('ivan-agencia').value) || 0,
+    },
+    juanjo: {
+      tpv: parseFloat(document.getElementById('juanjo-tpv').value) || 0,
+      parcial: parseFloat(document.getElementById('juanjo-parcial').value) || 0,
+      gasolina: parseFloat(document.getElementById('juanjo-gasolina').value) || 0,
+      parcialpte: parseFloat(document.getElementById('juanjo-parcialpte').value) || 0,
+      emisora: parseFloat(document.getElementById('juanjo-emisora').value) || 0,
+      sp: parseFloat(document.getElementById('juanjo-sp').value) || 0,
+      vales: parseFloat(document.getElementById('juanjo-vales').value) || 0,
+      agencia: parseFloat(document.getElementById('juanjo-agencia').value) || 0,
+    }
+  };
+
+  try {
+    const form = new URLSearchParams();
+    form.append('data', JSON.stringify(payload));
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:form });
+    showToast('✅ Datos 945 guardados');
+    setTimeout(() => { showScreen('coche'); loadCocheDetail('945'); }, 1500);
+  } catch(e) {
+    showToast('❌ Error de conexión');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Guardar en Sheet';
+  }
+}
+
+async function sendDataSimple() {
+  const btn = document.getElementById('send-simple-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  const mes = MONTHS[currentDate.getMonth()];
+  const payload = {
+    action: 'savesimple', mes,
+    coche: currentCoche,
+    c1parcial: parseFloat(document.getElementById('c1-parcial').value) || 0,
+    c2parcial: parseFloat(document.getElementById('c2-parcial').value) || 0,
+  };
+
+  try {
+    const form = new URLSearchParams();
+    form.append('data', JSON.stringify(payload));
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:form });
+    showToast('✅ Datos ' + currentCoche + ' guardados');
+    setTimeout(() => { showScreen('coche'); loadCocheDetail(currentCoche); }, 1500);
+  } catch(e) {
+    showToast('❌ Error de conexión');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Guardar en Sheet';
+  }
+}
+
+async function loadResumenAnual() {
+  const year = currentDate.getFullYear();
+  document.getElementById('resumen-year').textContent = year;
+  const rows = document.getElementById('resumen-rows');
+  rows.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">Cargando...</div>';
+
+  try {
+    const promises = MONTHS.map(mes =>
+      fetch(`${SCRIPT_URL}?action=home&mes=${encodeURIComponent(mes)}`)
+        .then(r => r.json()).catch(() => ({status:'ERROR'}))
+    );
+    const results = await Promise.all(promises);
+
+    let html = '';
+    let sums = {t945:0, t270:0, t741:0, t1093:0};
+
+    results.forEach((data, i) => {
+      const ok = data.status === 'OK';
+      const t945 = ok ? (parseFloat(data.total945)||0) : 0;
+      const t270 = ok ? (parseFloat(data.total270)||0) : 0;
+      const t741 = ok ? (parseFloat(data.total741)||0) : 0;
+      const t1093 = ok ? (parseFloat(data.total1093)||0) : 0;
+      sums.t945 += t945; sums.t270 += t270;
+      sums.t741 += t741; sums.t1093 += t1093;
+
+      html += `<div class="anual-row">
+        <div class="anual-td">${MONTHS[i].substring(0,3).toUpperCase()}</div>
+        <div class="anual-td">${t945>0 ? t945.toFixed(0)+'€' : '—'}</div>
+        <div class="anual-td">${t270>0 ? t270.toFixed(0)+'€' : '—'}</div>
+        <div class="anual-td">${t741>0 ? t741.toFixed(0)+'€' : '—'}</div>
+        <div class="anual-td">${t1093>0 ? t1093.toFixed(0)+'€' : '—'}</div>
+      </div>`;
+    });
+
+    html += `<div class="anual-row total-row">
+      <div class="anual-td">TOTAL</div>
+      <div class="anual-td">${sums.t945.toFixed(0)}€</div>
+      <div class="anual-td">${sums.t270.toFixed(0)}€</div>
+      <div class="anual-td">${sums.t741.toFixed(0)}€</div>
+      <div class="anual-td">${sums.t1093.toFixed(0)}€</div>
+    </div>`;
+
+    rows.innerHTML = html;
+  } catch(e) {
+    rows.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim)">Error al cargar</div>';
+  }
+}
+
+// Override showScreen to load resumen when needed
+const _showScreen = showScreen;
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'resumen') loadResumenAnual();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
